@@ -102,6 +102,7 @@ var supportedSubsystems map[string]struct{} = map[string]struct{}{
 	"cpuset":  {},
 	"blkio":   {},
 	"devices": {},
+	"pids":    {},
 }
 
 // Get cgroup and networking stats of the specified container
@@ -587,6 +588,11 @@ func setNetworkStats(libcontainerStats *libcontainer.Stats, ret *info.ContainerS
 	}
 }
 
+func setPidsStats(s *cgroups.Stats, ret *info.ContainerStats) {
+	ret.Pids.CurrentPids = s.PidsStats.Current
+	ret.Pids.MaxPids = s.PidsStats.Limit
+}
+
 func newContainerStats(libcontainerStats *libcontainer.Stats) *info.ContainerStats {
 	ret := &info.ContainerStats{
 		Timestamp: time.Now(),
@@ -596,6 +602,7 @@ func newContainerStats(libcontainerStats *libcontainer.Stats) *info.ContainerSta
 		setCpuStats(s, ret)
 		setDiskIoStats(s, ret)
 		setMemoryStats(s, ret)
+		setPidsStats(s, ret)
 	}
 	if len(libcontainerStats.Interfaces) > 0 {
 		setNetworkStats(libcontainerStats, ret)
